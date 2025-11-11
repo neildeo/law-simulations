@@ -6,11 +6,11 @@ import matplotlib.pyplot as plt
 
 RNG_SEED = 2129
 DEMAND_MEAN_INTERARRIVAL = 0.1
-INITIAL_INVENTORY = 100
-POLICY_FLOOR = 20
-POLICY_CEIL = 80
+INITIAL_INVENTORY = 50
+POLICY_FLOOR = 40
+POLICY_CEIL = 150
 
-TRACE = True
+TRACE = False
 
 
 def trace(content: str):
@@ -33,13 +33,13 @@ def demand(env: simpy.Environment, inventory: simpy.Container, inventory_levels:
             f'Time {env.now:.2f}: demand of {demand_size}. Current inventory: {inventory.level}')
 
 
-def order(env: simpy.Environment, inventory: simpy.Container, order_amount: float, inventory_levels: list[tuple[float, float]], total_cost: float, accumulated_costs: list[tuple[float, float]]):
+def order(env: simpy.Environment, inventory: simpy.Container, order_amount: float, inventory_levels: list[tuple[float, float]], total_cost: list[float], accumulated_costs: list[tuple[float, float]]):
     lead_time = 0.5 + rng.random() * 0.5
     trace(
         f'Order of {order_amount} at time {env.now:.2f} with lead time of {lead_time:.2f}')
     order_cost = 32 + 3 * order_amount
-    total_cost += order_cost
-    accumulated_costs.append((env.now, total_cost))
+    total_cost[0] += order_cost
+    accumulated_costs.append((env.now, total_cost[0]))
     trace(f'Order cost: {order_cost:.2f}')
     yield env.timeout(lead_time)
     inventory.put(order_amount)
@@ -47,7 +47,7 @@ def order(env: simpy.Environment, inventory: simpy.Container, order_amount: floa
     trace(f'Order of {order_amount} delivered at time {env.now:2f}')
 
 
-def inventory_review(env: simpy.Environment, inventory: simpy.Container, floor: int, ceil: int, inventory_levels: list[tuple[float, float]], total_cost: float, accumulated_costs: list[tuple[float, float]]):
+def inventory_review(env: simpy.Environment, inventory: simpy.Container, floor: int, ceil: int, inventory_levels: list[tuple[float, float]], total_cost: list[float], accumulated_costs: list[tuple[float, float]]):
     while True:
         yield env.timeout(1)
         if inventory.level < floor:
@@ -60,7 +60,7 @@ def main():
     inventory = simpy.Container(env, init=INITIAL_INVENTORY)
     inventory_levels = []
     accumulated_costs = []
-    total_cost = 0
+    total_cost = [0.0]
     inventory_levels.append((0, INITIAL_INVENTORY))
     accumulated_costs.append((0, 0))
 
@@ -69,6 +69,8 @@ def main():
                 POLICY_FLOOR, POLICY_CEIL, inventory_levels, total_cost, accumulated_costs))
 
     env.run(15)
+
+    print(f'Simulation complete.\nTotal cost: {total_cost[0]:2f}')
 
     inv_times, inv_levels = zip(*inventory_levels)
     cost_times, cost_levels = zip(*accumulated_costs)
