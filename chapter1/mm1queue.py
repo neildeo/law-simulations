@@ -47,7 +47,11 @@ class Experiment:
         service_rate: float,
         seed: int | None = None,
         rng: np.random.Generator | None = None,
+        experiment_id: int = 1,
     ) -> None:
+        # Experiment ID
+        self.experiment_id = experiment_id
+
         # RNG and simulation environment
         if rng:
             self.rng = rng
@@ -99,7 +103,12 @@ class Experiment:
 
         self.traces["number_in_system"] = [(0, 0)]
 
-    def run(self, until: float | None = None, plot_trace: bool = True):
+    def run(
+        self,
+        until: float | None = None,
+        print_summary: bool = True,
+        plot_trace: bool = True,
+    ):
         print("Running simulation...")
 
         self.env.process(self.arrival_process())
@@ -134,17 +143,17 @@ class Experiment:
             np.array(self.lists["total_times"]).max()
         )
 
-        print("Results")
-        print("----------------------")
-        longest_name_length = max(
-            [len(metric.display_name) for metric in self.metrics.values()]
-        )
-        for metric in self.metrics.values():
-            print(
-                f"{metric.display_name:<{longest_name_length + 6}} {metric.value:>7{metric.format_spec}}"
+        if print_summary:
+            print("Results")
+            print("----------------------")
+            longest_name_length = max(
+                [len(metric.display_name) for metric in self.metrics.values()]
             )
-
-        print("")
+            for metric in self.metrics.values():
+                print(
+                    f"{metric.display_name:<{longest_name_length + 6}} {metric.value:>7{metric.format_spec}}"
+                )
+            print("")
 
         if plot_trace:
             times, lengths = zip(*self.traces["number_in_system"])
