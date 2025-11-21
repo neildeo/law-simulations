@@ -1,0 +1,11 @@
+name: simulations
+channels:
+  - conda-forge
+dependencies:
+  - numpy
+  - matplotlib
+  - python
+  - simpy
+  - ipykernel
+  - pandas
+prefix: C:\Users\Neil.Deo\AppData\Local\miniforge3\envs\simulations
