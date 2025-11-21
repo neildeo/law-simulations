@@ -1,6 +1,6 @@
 import numpy as np
 
-from mm1queue import Experiment, ExperimentResults
+from mm1queue import Experiment
 
 
 class ReplicatedExperiment:
@@ -29,16 +29,9 @@ class ReplicatedExperiment:
         ]
 
     def run(self, until: float | None = None):
-        for exp in self.runs:
-            exp.run(until)
-
-    def get_results(self) -> list[ExperimentResults]:
-        for exp in self.runs:
-            exp.get_results(plot_trace=False)
-
-        results: list[ExperimentResults] = [exp.results for exp in self.runs]
-
-        return results
+        for i, exp in enumerate(self.runs):
+            print(f"Replication {i}")
+            exp.run(until, plot_trace=False)
 
 
 def main():
@@ -48,7 +41,6 @@ def main():
 
     exp = ReplicatedExperiment(arrival_rate, service_rate, replications, seed=1432)
     exp.run(10000)
-    exp.get_results()
 
 
 if __name__ == "__main__":
